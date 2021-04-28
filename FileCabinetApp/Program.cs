@@ -116,6 +116,9 @@ namespace FileCabinetApp
         {
             string firstName, lastName;
             DateTime dateOfBirth;
+            char gender;
+            short numberOfReviews;
+            decimal salary;
 
             Console.Write("First name: ");
             firstName = Console.ReadLine();
@@ -126,7 +129,16 @@ namespace FileCabinetApp
             Console.Write("Date of birth: ");
             dateOfBirth = Convert.ToDateTime(Console.ReadLine(), new CultureInfo("en-US"));
 
-            int id = Program.fileCabinetService.CreateRecord(firstName, lastName, dateOfBirth);
+            Console.Write("Sex (M/W): ");
+            gender = char.ToUpper(Console.ReadKey().KeyChar, new CultureInfo("en-US"));
+
+            Console.Write("\nNumber of reviews: ");
+            numberOfReviews = Convert.ToInt16(Console.ReadLine(), new CultureInfo("en-US"));
+
+            Console.Write("Salary: ");
+            salary = Convert.ToDecimal(Console.ReadLine(), new CultureInfo("en-US"));
+
+            int id = Program.fileCabinetService.CreateRecord(firstName, lastName, dateOfBirth, gender, numberOfReviews, salary);
             Console.WriteLine($"Record #{id} is created.");
         }
 
@@ -136,7 +148,8 @@ namespace FileCabinetApp
 
             foreach (FileCabinetRecord record in listRecords)
             {
-                Console.WriteLine($"#{record.Id}, {record.FirstName}, {record.LastName}, {record.DateOfBirth.ToString("yyy-MMM-dd", CultureInfo.InvariantCulture)}");
+                Console.WriteLine($"#{record.Id}, {record.FirstName}, {record.LastName}, {record.DateOfBirth.ToString("yyy-MMM-dd", CultureInfo.InvariantCulture)}" +
+                    $", {record.Gender}, {record.NumberOfReviews}, {record.Salary}");
             }
         }
     }
