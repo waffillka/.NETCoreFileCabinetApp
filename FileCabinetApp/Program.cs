@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace FileCabinetApp
 {
@@ -20,6 +21,7 @@ namespace FileCabinetApp
             new Tuple<string, Action<string>>("exit", Exit),
             new Tuple<string, Action<string>>("stat", Stat),
             new Tuple<string, Action<string>>("create", Create),
+            new Tuple<string, Action<string>>("list", List),
         };
 
         private static string[][] helpMessages = new string[][]
@@ -28,6 +30,7 @@ namespace FileCabinetApp
             new string[] { "exit", "exits the application", "The 'exit' command exits the application." },
             new string[] { "stat", "prints statistics", "The 'stat' command prints statistics." },
             new string[] { "create", "creating a new record in the filing cabinet", "The 'create' command creating a new record in the filing cabinet." },
+            new string[] { "list", "prints records", "The 'stat' command prints records." },
         };
 
         public static void Main(string[] args)
@@ -121,10 +124,20 @@ namespace FileCabinetApp
             lastName = Console.ReadLine();
 
             Console.Write("Date of birth: ");
-            dateOfBirth = Convert.ToDateTime(Console.ReadLine());
+            dateOfBirth = Convert.ToDateTime(Console.ReadLine(), new CultureInfo("en-US"));
 
             int id = Program.fileCabinetService.CreateRecord(firstName, lastName, dateOfBirth);
             Console.WriteLine($"Record #{id} is created.");
+        }
+
+        private static void List(string parameters)
+        {
+            FileCabinetRecord[] listRecords = Program.fileCabinetService.GetRecords();
+
+            foreach (FileCabinetRecord record in listRecords)
+            {
+                Console.WriteLine($"#{record.Id}, {record.FirstName}, {record.LastName}, {record.DateOfBirth.ToString("yyy-MMM-dd", CultureInfo.InvariantCulture)}");
+            }
         }
     }
 }
