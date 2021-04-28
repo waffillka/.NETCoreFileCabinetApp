@@ -23,8 +23,7 @@ namespace FileCabinetApp
 
         public int GetStat()
         {
-            // TODO: добавьте реализацию метода
-            return 0;
+            return this.list.Count;
         }
     }
 }
