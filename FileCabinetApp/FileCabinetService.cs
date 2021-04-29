@@ -9,6 +9,46 @@ namespace FileCabinetApp
 
         public int CreateRecord(string firstName, string lastName, DateTime dateOfBirth, char gender, short numberOfReviews, decimal salary)
         {
+            if (string.IsNullOrEmpty(firstName))
+            {
+                throw new ArgumentNullException($"{firstName} cannot be null or empty.");
+            }
+
+            if (firstName.Trim().Length < 2 || firstName.Trim().Length > 60)
+            {
+                throw new ArgumentException($"{nameof(firstName)} cannot be less then 2 and more then 60");
+            }
+
+            if (string.IsNullOrEmpty(lastName))
+            {
+                throw new ArgumentNullException($"{nameof(lastName)} cannot be null or empty.");
+            }
+
+            if (lastName.Trim().Length < 2 || lastName.Trim().Length > 60)
+            {
+                throw new ArgumentException($"{nameof(lastName)} cannot be less then 2 and more then 60");
+            }
+
+            if (gender != 'M' || gender != 'W')
+            {
+                throw new ArgumentException($"{nameof(lastName)}should be equal to 'M' or 'W'.");
+            }
+
+            if (dateOfBirth > DateTime.Now || dateOfBirth < new DateTime(1, 1, 1950))
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(dateOfBirth)} must be between the current date and 01-Jan-1950");
+            }
+
+            if (numberOfReviews < 0)
+            {
+                throw new ArgumentOutOfRangeException($"{numberOfReviews} cannot be less then 0.");
+            }
+
+            if (salary < 0)
+            {
+                throw new ArgumentOutOfRangeException($"{salary} cannot be less then 0.");
+            }
+
             var record = new FileCabinetRecord
             {
                 Id = this.list.Count + 1,
