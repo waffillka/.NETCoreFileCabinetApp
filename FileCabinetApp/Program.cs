@@ -119,24 +119,49 @@ namespace FileCabinetApp
             char gender;
             short numberOfReviews;
             decimal salary;
+            do
+            {
+                Console.Write("First name: ");
+                firstName = Console.ReadLine();
+            }
+            while (firstName.Trim().Length < 2 || firstName.Trim().Length > 60);
 
-            Console.Write("First name: ");
-            firstName = Console.ReadLine();
+            do
+            {
+                Console.Write("Last name: ");
+                lastName = Console.ReadLine();
+            }
+            while (lastName.Trim().Length is < 2 or > 60);
 
-            Console.Write("Last name: ");
-            lastName = Console.ReadLine();
+            bool w;
+            do
+            {
+                Console.Write("Date of birth: ");
+                w = DateTime.TryParse(Console.ReadLine(), out dateOfBirth);
+            }
+            while (!w || (dateOfBirth > DateTime.Now || dateOfBirth < new DateTime(1950, 1, 1)));
 
-            Console.Write("Date of birth: ");
-            dateOfBirth = Convert.ToDateTime(Console.ReadLine(), new CultureInfo("en-US"));
+            do
+            {
+                Console.Write("Gender (M/W): ");
+                gender = char.ToUpper(Console.ReadKey().KeyChar, new CultureInfo("en-US"));
+            }
+            while (gender != 'M' && gender != 'W');
 
-            Console.Write("Sex (M/W): ");
-            gender = char.ToUpper(Console.ReadKey().KeyChar, new CultureInfo("en-US"));
+            do
+            {
+                Console.Write("\nNumber of reviews: ");
+                w = short.TryParse(Console.ReadLine(), out numberOfReviews);
+            }
+            while (!w || numberOfReviews < 0);
 
-            Console.Write("\nNumber of reviews: ");
-            numberOfReviews = Convert.ToInt16(Console.ReadLine(), new CultureInfo("en-US"));
-
-            Console.Write("Salary: ");
-            salary = Convert.ToDecimal(Console.ReadLine(), new CultureInfo("en-US"));
+            do
+            {
+                Console.Write("Salary: ");
+                salary = Convert.ToDecimal(Console.ReadLine(), new CultureInfo("en-US"));
+                w = decimal.TryParse(Console.ReadLine(), out salary);
+            }
+            while (!w || salary < 0);
 
             int id = Program.fileCabinetService.CreateRecord(firstName, lastName, dateOfBirth, gender, numberOfReviews, salary);
             Console.WriteLine($"Record #{id} is created.");

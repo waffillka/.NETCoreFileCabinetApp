@@ -21,7 +21,7 @@ namespace FileCabinetApp
 
             if (string.IsNullOrEmpty(lastName))
             {
-                throw new ArgumentNullException($"{nameof(lastName)} cannot be null or empty.");
+                throw new ArgumentNullException($"{lastName} cannot be null or empty.");
             }
 
             if (lastName.Trim().Length < 2 || lastName.Trim().Length > 60)
@@ -29,14 +29,14 @@ namespace FileCabinetApp
                 throw new ArgumentException($"{nameof(lastName)} cannot be less then 2 and more then 60");
             }
 
-            if (gender != 'M' || gender != 'W')
+            if (gender != 'M' && gender != 'W')
             {
                 throw new ArgumentException($"{nameof(lastName)}should be equal to 'M' or 'W'.");
             }
 
             if (dateOfBirth > DateTime.Now || dateOfBirth < new DateTime(1, 1, 1950))
             {
-                throw new ArgumentOutOfRangeException($"{nameof(dateOfBirth)} must be between the current date and 01-Jan-1950");
+                throw new ArgumentOutOfRangeException($"{dateOfBirth} must be between the current date and 01-Jan-1950");
             }
 
             if (numberOfReviews < 0)

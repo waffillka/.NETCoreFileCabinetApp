@@ -21,7 +21,7 @@ namespace FileCabinetApp
         public DateTime DateOfBirth { get; set; }
 
         /// <summary>Gets or sets the sex.</summary>
-        /// <value>Gender</value>
+        /// <value>Gender.</value>
         public char Gender { get; set; }
 
         /// <summary>Gets or sets the number of reviews.</summary>
