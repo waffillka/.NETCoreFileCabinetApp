@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
+using System.Text;
 
 namespace FileCabinetApp
 {
@@ -31,6 +33,7 @@ namespace FileCabinetApp
             new Tuple<string, Action<string>>("create", Create),
             new Tuple<string, Action<string>>("list", List),
             new Tuple<string, Action<string>>("edit", Edit),
+            new Tuple<string, Action<string>>("find", Find),
         };
 
         private static string[][] helpMessages = new string[][]
@@ -41,6 +44,7 @@ namespace FileCabinetApp
             new string[] { "create", "creating a new record in the filing cabinet", "The 'create' command creating a new record in the filing cabinet." },
             new string[] { "list", "prints records", "The 'list' command prints records." },
             new string[] { "edit", "edits a record", "The 'edit' command edits a record." },
+            new string[] { "find", "find record by a known value", "The 'find' command find record by a known value" },
         };
 
         public static void Main(string[] args)
@@ -138,6 +142,52 @@ namespace FileCabinetApp
             {
                 Console.WriteLine($"#{record.Id}, {record.FirstName}, {record.LastName}, {record.DateOfBirth.ToString("yyy-MMM-dd", CultureInfo.InvariantCulture)}" +
                     $", {record.Gender}, {record.NumberOfReviews}, {record.Salary}");
+            }
+        }
+
+        private static void Find(string parameters)
+        {
+            try
+            {
+                string parameterValue = parameters.Split(' ').Last().Trim('"');
+                string[] parameterArray = parameters.Split(' ');
+                var parameterName = parameterArray[^2];
+                switch (parameterName.ToLower(CultureInfo.CurrentCulture))
+                {
+                    case "firstname":
+                        ListRecord(Program.fileCabinetService.FindByFirstName(parameterValue));
+                        break;
+                    case "lastname":
+                        ListRecord(Program.fileCabinetService.FindByLastName(parameterValue));
+                        break;
+                    case "dateofbirth":
+                        ListRecord(Program.fileCabinetService.FindByDateOfBirth(parameterValue));
+                        break;
+                }
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (ArgumentException argEx)
+            {
+                Console.WriteLine(argEx.Message);
+            }
+        }
+
+        private static void ListRecord(FileCabinetRecord[] listRecordsInService)
+        {
+            for (int i = 0; i < listRecordsInService.Length; i++)
+            {
+                var builder = new StringBuilder();
+                builder.Append($"{listRecordsInService[i].Id}, ");
+                builder.Append($"{listRecordsInService[i].FirstName}, ");
+                builder.Append($"{listRecordsInService[i].LastName}, ");
+                builder.Append($"{listRecordsInService[i].DateOfBirth.ToString("yyyy-MMM-dd", CultureInfo.InvariantCulture)}, ");
+                builder.Append($"{listRecordsInService[i].Gender}, ");
+                builder.Append($"{listRecordsInService[i].NumberOfReviews}, ");
+                builder.Append($"{listRecordsInService[i].Salary}");
+                Console.WriteLine("#" + builder.ToString());
             }
         }
 
