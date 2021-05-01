@@ -84,5 +84,20 @@ namespace FileCabinetApp
             this.list[id - 1].NumberOfReviews = numberOfReviews;
             this.list[id - 1].Salary = salary;
         }
+
+        public FileCabinetRecord[] FindByFirstName(string firstName)
+        {
+            var listFileCabinetRecord = new List<FileCabinetRecord>();
+
+            foreach (var temp in this.list)
+            {
+                if (temp.FirstName == firstName)
+                {
+                    listFileCabinetRecord.Add(temp);
+                }
+            }
+
+            return listFileCabinetRecord.ToArray();
+        }
     }
 }
