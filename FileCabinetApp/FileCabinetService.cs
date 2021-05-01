@@ -7,8 +7,8 @@ namespace FileCabinetApp
     public class FileCabinetService
     {
         private readonly List<FileCabinetRecord> list = new List<FileCabinetRecord>();
-
         private readonly Dictionary<string, List<FileCabinetRecord>> firstNameDictionary = new Dictionary<string, List<FileCabinetRecord>>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<DateTime, List<FileCabinetRecord>> dateofbirthDictionary = new Dictionary<DateTime, List<FileCabinetRecord>>();
 
         public int CreateRecord(string firstName, string lastName, DateTime dateOfBirth, char gender, short numberOfReviews, decimal salary)
         {
@@ -63,6 +63,7 @@ namespace FileCabinetApp
                 Salary = salary,
             };
 
+            this.AddInDictionaryDateOfBirth(dateOfBirth, record);
             this.AddInDictionaryFirstName(firstName, record);
             this.list.Add(record);
 
@@ -82,6 +83,7 @@ namespace FileCabinetApp
         public void EditRecord(int id, string firstName, string lastName, DateTime dateOfBirth, char gender, short numberOfReviews, decimal salary)
         {
             this.firstNameDictionary.Remove(firstName);
+            this.dateofbirthDictionary.Remove(dateOfBirth);
             foreach (var record in this.list.Where(x => x.Id == id))
             {
                 record.Id = id;
@@ -92,6 +94,7 @@ namespace FileCabinetApp
                 record.NumberOfReviews = numberOfReviews;
                 record.Salary = salary;
                 this.firstNameDictionary.Add(firstName, new List<FileCabinetRecord> { record });
+                this.dateofbirthDictionary.Add(dateOfBirth, new List<FileCabinetRecord> { record });
             }
         }
 
@@ -130,17 +133,14 @@ namespace FileCabinetApp
                 throw new ArgumentException("Invalid string with date");
             }
 
-            var listFileCabinetRecord = new List<FileCabinetRecord>();
-
-            foreach (var temp in this.list)
+            if (this.dateofbirthDictionary.ContainsKey(date))
             {
-                if (temp.DateOfBirth == date)
-                {
-                    listFileCabinetRecord.Add(temp);
-                }
+                return this.dateofbirthDictionary[date].ToArray();
             }
-
-            return listFileCabinetRecord.ToArray();
+            else
+            {
+                return Array.Empty<FileCabinetRecord>();
+            }
         }
 
         public void AddInDictionaryFirstName(string firstName, FileCabinetRecord record)
@@ -152,6 +152,18 @@ namespace FileCabinetApp
             else
             {
                 this.firstNameDictionary.Add(firstName, new List<FileCabinetRecord> { record });
+            }
+        }
+
+        public void AddInDictionaryDateOfBirth(DateTime dateofbirth, FileCabinetRecord record)
+        {
+            if (this.dateofbirthDictionary.ContainsKey(dateofbirth))
+            {
+                this.dateofbirthDictionary[dateofbirth].Add(record);
+            }
+            else
+            {
+                this.dateofbirthDictionary.Add(dateofbirth, new List<FileCabinetRecord> { record });
             }
         }
     }
