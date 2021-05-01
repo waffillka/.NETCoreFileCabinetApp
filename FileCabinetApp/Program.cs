@@ -157,6 +157,9 @@ namespace FileCabinetApp
                     case "firstname":
                         ListRecord(Program.fileCabinetService.FindByFirstName(parameterValue));
                         break;
+                    case "lastname":
+                        ListRecord(Program.fileCabinetService.FindByLastName(parameterValue));
+                        break;
                 }
             }
             catch (IndexOutOfRangeException ex)

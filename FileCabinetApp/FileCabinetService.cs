@@ -99,5 +99,20 @@ namespace FileCabinetApp
 
             return listFileCabinetRecord.ToArray();
         }
+
+        public FileCabinetRecord[] FindByLastName(string lastName)
+        {
+            var listFileCabinetRecord = new List<FileCabinetRecord>();
+
+            foreach (var temp in this.list)
+            {
+                if (temp.LastName == lastName)
+                {
+                    listFileCabinetRecord.Add(temp);
+                }
+            }
+
+            return listFileCabinetRecord.ToArray();
+        }
     }
 }
