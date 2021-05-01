@@ -160,11 +160,18 @@ namespace FileCabinetApp
                     case "lastname":
                         ListRecord(Program.fileCabinetService.FindByLastName(parameterValue));
                         break;
+                    case "dateofbirth":
+                        ListRecord(Program.fileCabinetService.FindByDateOfBirth(parameterValue));
+                        break;
                 }
             }
             catch (IndexOutOfRangeException ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+            catch (ArgumentException argEx)
+            {
+                Console.WriteLine(argEx.Message);
             }
         }
 

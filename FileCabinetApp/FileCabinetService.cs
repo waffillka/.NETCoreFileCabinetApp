@@ -114,5 +114,26 @@ namespace FileCabinetApp
 
             return listFileCabinetRecord.ToArray();
         }
+
+        public FileCabinetRecord[] FindByDateOfBirth(string dateofbirth)
+        {
+            DateTime date;
+            if (!DateTime.TryParse(dateofbirth, out date))
+            {
+                throw new ArgumentException("Invalid string with date");
+            }
+
+            var listFileCabinetRecord = new List<FileCabinetRecord>();
+
+            foreach (var temp in this.list)
+            {
+                if (temp.DateOfBirth == date)
+                {
+                    listFileCabinetRecord.Add(temp);
+                }
+            }
+
+            return listFileCabinetRecord.ToArray();
+        }
     }
 }
