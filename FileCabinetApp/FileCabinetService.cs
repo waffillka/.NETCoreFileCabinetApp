@@ -8,6 +8,7 @@ namespace FileCabinetApp
     {
         private readonly List<FileCabinetRecord> list = new List<FileCabinetRecord>();
         private readonly Dictionary<string, List<FileCabinetRecord>> firstNameDictionary = new Dictionary<string, List<FileCabinetRecord>>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<string, List<FileCabinetRecord>> lastNameDictionary = new Dictionary<string, List<FileCabinetRecord>>(StringComparer.InvariantCultureIgnoreCase);
         private readonly Dictionary<DateTime, List<FileCabinetRecord>> dateofbirthDictionary = new Dictionary<DateTime, List<FileCabinetRecord>>();
 
         public int CreateRecord(string firstName, string lastName, DateTime dateOfBirth, char gender, short numberOfReviews, decimal salary)
@@ -65,6 +66,7 @@ namespace FileCabinetApp
 
             this.AddInDictionaryDateOfBirth(dateOfBirth, record);
             this.AddInDictionaryFirstName(firstName, record);
+            this.AddInDictionaryLastName(lastName, record);
             this.list.Add(record);
 
             return record.Id;
@@ -84,6 +86,7 @@ namespace FileCabinetApp
         {
             this.firstNameDictionary.Remove(firstName);
             this.dateofbirthDictionary.Remove(dateOfBirth);
+            this.lastNameDictionary.Remove(lastName);
             foreach (var record in this.list.Where(x => x.Id == id))
             {
                 record.Id = id;
@@ -95,6 +98,7 @@ namespace FileCabinetApp
                 record.Salary = salary;
                 this.firstNameDictionary.Add(firstName, new List<FileCabinetRecord> { record });
                 this.dateofbirthDictionary.Add(dateOfBirth, new List<FileCabinetRecord> { record });
+                this.lastNameDictionary.Add(lastName, new List<FileCabinetRecord> { record });
             }
         }
 
@@ -152,6 +156,18 @@ namespace FileCabinetApp
             else
             {
                 this.firstNameDictionary.Add(firstName, new List<FileCabinetRecord> { record });
+            }
+        }
+
+        public void AddInDictionaryLastName(string lastName, FileCabinetRecord record)
+        {
+            if (this.lastNameDictionary.ContainsKey(lastName))
+            {
+                this.lastNameDictionary[lastName].Add(record);
+            }
+            else
+            {
+                this.lastNameDictionary.Add(lastName, new List<FileCabinetRecord> { record });
             }
         }
 
