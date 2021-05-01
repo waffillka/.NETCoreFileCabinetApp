@@ -34,7 +34,7 @@ namespace FileCabinetApp
                 throw new ArgumentException($"{nameof(lastName)}should be equal to 'M' or 'W'.");
             }
 
-            if (dateOfBirth > DateTime.Now || dateOfBirth < new DateTime(1, 1, 1950))
+            if (dateOfBirth > DateTime.Now || dateOfBirth < new DateTime(1950, 1, 1))
             {
                 throw new ArgumentOutOfRangeException($"{dateOfBirth} must be between the current date and 01-Jan-1950");
             }
@@ -73,6 +73,16 @@ namespace FileCabinetApp
         public int GetStat()
         {
             return this.list.Count;
+        }
+
+        public void EditRecord(int id, string firstName, string lastName, DateTime dateOfBirth, char gender, short numberOfReviews, decimal salary)
+        {
+            this.list[id - 1].FirstName = firstName;
+            this.list[id - 1].LastName = lastName;
+            this.list[id - 1].DateOfBirth = dateOfBirth;
+            this.list[id - 1].Gender = gender;
+            this.list[id - 1].NumberOfReviews = numberOfReviews;
+            this.list[id - 1].Salary = salary;
         }
     }
 }

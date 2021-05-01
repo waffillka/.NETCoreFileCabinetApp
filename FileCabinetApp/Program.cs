@@ -11,6 +11,14 @@ namespace FileCabinetApp
         private const int DescriptionHelpIndex = 1;
         private const int ExplanationHelpIndex = 2;
 
+        private static int id;
+        private static string firstName;
+        private static string lastName;
+        private static DateTime dateOfBirth;
+        private static char gender;
+        private static short numberOfReviews;
+        private static decimal salary;
+
         private static bool isRunning = true;
 
         private static FileCabinetService fileCabinetService = new FileCabinetService();
@@ -22,6 +30,7 @@ namespace FileCabinetApp
             new Tuple<string, Action<string>>("stat", Stat),
             new Tuple<string, Action<string>>("create", Create),
             new Tuple<string, Action<string>>("list", List),
+            new Tuple<string, Action<string>>("edit", Edit),
         };
 
         private static string[][] helpMessages = new string[][]
@@ -30,7 +39,8 @@ namespace FileCabinetApp
             new string[] { "exit", "exits the application", "The 'exit' command exits the application." },
             new string[] { "stat", "prints statistics", "The 'stat' command prints statistics." },
             new string[] { "create", "creating a new record in the filing cabinet", "The 'create' command creating a new record in the filing cabinet." },
-            new string[] { "list", "prints records", "The 'stat' command prints records." },
+            new string[] { "list", "prints records", "The 'list' command prints records." },
+            new string[] { "edit", "edits a record", "The 'edit' command edits a record." },
         };
 
         public static void Main(string[] args)
@@ -114,11 +124,49 @@ namespace FileCabinetApp
 
         private static void Create(string parameters)
         {
-            string firstName, lastName;
-            DateTime dateOfBirth;
-            char gender;
-            short numberOfReviews;
-            decimal salary;
+            UserData();
+
+            int id = Program.fileCabinetService.CreateRecord(firstName, lastName, dateOfBirth, gender, numberOfReviews, salary);
+            Console.WriteLine($"Record #{id} is created.");
+        }
+
+        private static void List(string parameters)
+        {
+            FileCabinetRecord[] listRecords = Program.fileCabinetService.GetRecords();
+
+            foreach (FileCabinetRecord record in listRecords)
+            {
+                Console.WriteLine($"#{record.Id}, {record.FirstName}, {record.LastName}, {record.DateOfBirth.ToString("yyy-MMM-dd", CultureInfo.InvariantCulture)}" +
+                    $", {record.Gender}, {record.NumberOfReviews}, {record.Salary}");
+            }
+        }
+
+        private static void Edit(string parameters)
+        {
+            try
+            {
+                if (!int.TryParse(parameters, out id))
+                {
+                    throw new ArgumentException("Invalid input");
+                }
+
+                if (id > Program.fileCabinetService.GetStat() || id < 1)
+                {
+                    throw new ArgumentException($"#{parameters} record in not found. ");
+                }
+
+                Program.UserData();
+                Program.fileCabinetService.EditRecord(id, firstName, lastName, dateOfBirth, gender, numberOfReviews, salary);
+                Console.WriteLine($"Record #{parameters} is updated.");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private static void UserData()
+        {
             do
             {
                 Console.Write("First name: ");
@@ -158,24 +206,9 @@ namespace FileCabinetApp
             do
             {
                 Console.Write("Salary: ");
-                salary = Convert.ToDecimal(Console.ReadLine(), new CultureInfo("en-US"));
                 w = decimal.TryParse(Console.ReadLine(), out salary);
             }
             while (!w || salary < 0);
-
-            int id = Program.fileCabinetService.CreateRecord(firstName, lastName, dateOfBirth, gender, numberOfReviews, salary);
-            Console.WriteLine($"Record #{id} is created.");
-        }
-
-        private static void List(string parameters)
-        {
-            FileCabinetRecord[] listRecords = Program.fileCabinetService.GetRecords();
-
-            foreach (FileCabinetRecord record in listRecords)
-            {
-                Console.WriteLine($"#{record.Id}, {record.FirstName}, {record.LastName}, {record.DateOfBirth.ToString("yyy-MMM-dd", CultureInfo.InvariantCulture)}" +
-                    $", {record.Gender}, {record.NumberOfReviews}, {record.Salary}");
-            }
         }
     }
 }
