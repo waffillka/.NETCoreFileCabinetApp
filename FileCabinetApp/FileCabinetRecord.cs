@@ -2,6 +2,9 @@
 
 namespace FileCabinetApp
 {
+    /// <summary>
+    /// Properties that describe the model.
+    /// </summary>
     public class FileCabinetRecord
     {
         /// <summary>Gets or sets the identifier.</summary>
