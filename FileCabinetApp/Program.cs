@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -16,17 +17,10 @@ namespace FileCabinetApp
         private const int DescriptionHelpIndex = 1;
         private const int ExplanationHelpIndex = 2;
 
-        private static int id;
-        private static string firstName;
-        private static string lastName;
-        private static DateTime dateOfBirth;
-        private static char gender;
-        private static short numberOfReviews;
-        private static decimal salary;
-
+        private static FileCabinetServiceContext fileCabinetServiceContext = new FileCabinetServiceContext();
         private static bool isRunning = true;
 
-        private static FileCabinetService fileCabinetService = new ();
+        private static FileCabinetService fileCabinetService = new(new DataValidator());
 
         private static readonly Tuple<string, Action<string>>[] Commands = new Tuple<string, Action<string>>[]
         {
@@ -49,6 +43,8 @@ namespace FileCabinetApp
             new string[] { "edit", "edits a record", "The 'edit' command edits a record." },
             new string[] { "find", "find record by a known value", "The 'find' command find record by a known value" },
         };
+
+        private static bool isCorrect;
 
         /// <summary>
         /// Point of entry.
@@ -134,10 +130,27 @@ namespace FileCabinetApp
 
         private static void Create(string parameters)
         {
-            UserData();
-
-            int id = Program.fileCabinetService.CreateRecord(firstName, lastName, dateOfBirth, gender, numberOfReviews, salary);
-            Console.WriteLine($"Record #{id} is created.");
+            string repeatIfDataIsNotCorrect = parameters;
+            try
+            {
+                UserData();
+                int id = Program.fileCabinetService.CreateRecord(fileCabinetServiceContext);
+                Console.WriteLine($"Record #{id} is created.");
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException || ex is ArgumentNullException)
+            {
+                Console.WriteLine(ex.Message);
+                isCorrect = false;
+            }
+            finally
+            {
+                if (!isCorrect)
+                {
+                    Console.WriteLine("Your data is incorrect, please try again");
+                    isCorrect = true;
+                    Create(repeatIfDataIsNotCorrect);
+                }
+            }
         }
 
         private static void List(string parameters)
@@ -201,21 +214,21 @@ namespace FileCabinetApp
         {
             try
             {
-                if (!int.TryParse(parameters, out id))
+                int getNumberEditRecord = int.Parse(parameters, CultureInfo.CurrentCulture);
+                if (getNumberEditRecord > Program.fileCabinetService.GetStat() || getNumberEditRecord < 1)
                 {
-                    throw new ArgumentException("Invalid input");
-                }
-
-                if (id > Program.fileCabinetService.GetStat() || id < 1)
-                {
-                    throw new ArgumentException($"#{parameters} record in not found. ");
+                    throw new ArgumentException($"#{getNumberEditRecord} record in not found. ");
                 }
 
                 Program.UserData();
-                Program.fileCabinetService.EditRecord(id, firstName, lastName, dateOfBirth, gender, numberOfReviews, salary);
+                Program.fileCabinetService.EditRecord(getNumberEditRecord, fileCabinetServiceContext);
                 Console.WriteLine($"Record #{parameters} is updated.");
             }
             catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (FormatException ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -223,6 +236,13 @@ namespace FileCabinetApp
 
         private static void UserData()
         {
+            int id;
+            string firstName;
+            string lastName;
+            DateTime dateOfBirth;
+            char gender;
+            short numberOfReviews;
+            decimal salary;
             do
             {
                 Console.Write("First name: ");
@@ -265,6 +285,14 @@ namespace FileCabinetApp
                 w = decimal.TryParse(Console.ReadLine(), out salary);
             }
             while (!w || salary < 0);
+
+            fileCabinetServiceContext.FirstName = firstName;
+            fileCabinetServiceContext.LastName = lastName;
+            fileCabinetServiceContext.DateOfBirth = dateOfBirth;
+            fileCabinetServiceContext.NumberOfReviews = numberOfReviews;
+            fileCabinetServiceContext.Gender = gender;
+            fileCabinetServiceContext.Salary = salary;
+
         }
     }
 }
