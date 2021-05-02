@@ -9,10 +9,10 @@ namespace FileCabinetApp
     /// </summary>
     public class FileCabinetService
     {
-        private readonly List<FileCabinetRecord> list = new();
-        private readonly Dictionary<string, List<FileCabinetRecord>> firstNameDictionary = new(StringComparer.InvariantCultureIgnoreCase);
-        private readonly Dictionary<string, List<FileCabinetRecord>> lastNameDictionary = new(StringComparer.InvariantCultureIgnoreCase);
-        private readonly Dictionary<DateTime, List<FileCabinetRecord>> dateofbirthDictionary = new();
+        private readonly List<FileCabinetRecord> list = new ();
+        private readonly Dictionary<string, List<FileCabinetRecord>> firstNameDictionary = new (StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<string, List<FileCabinetRecord>> lastNameDictionary = new (StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<DateTime, List<FileCabinetRecord>> dateofbirthDictionary = new ();
         private readonly IRecordValidator contextStrategy;
 
         /// <summary>
@@ -24,7 +24,11 @@ namespace FileCabinetApp
             this.contextStrategy = strategy;
         }
 
-
+        /// <summary>
+        /// creates a new records.
+        /// </summary>
+        /// <param name="fileCabinetServiceContext">Input FirstName, LastName, DateOfBirth, Gender, Salary, NumberOfReviews.</param>
+        /// <returns>id of the new record.</returns>
         public int CreateRecord(FileCabinetServiceContext fileCabinetServiceContext)
         {
             this.contextStrategy.CheckUsersDataEntry(fileCabinetServiceContext);
@@ -91,42 +95,6 @@ namespace FileCabinetApp
                 this.AddInDictionaryFirstName(objectParameter.FirstName, record);
                 this.AddInDictionaryLastName(objectParameter.LastName, record);
                 this.AddInDictionaryDateOfBirth(objectParameter.DateOfBirth, record);
-            }
-        }
-
-        private void RemoveRecordInDateOfBirthDictionary(FileCabinetRecord oldRecord)
-        {
-            if (oldRecord is null)
-            {
-                throw new ArgumentNullException(nameof(oldRecord));
-            }
-            else if (this.dateofbirthDictionary.ContainsKey(oldRecord.DateOfBirth))
-            {
-                this.dateofbirthDictionary[oldRecord.DateOfBirth].Remove(oldRecord);
-            }
-        }
-
-        private void RemoveRecordInLastNameDictionary(FileCabinetRecord oldRecord)
-        {
-            if (oldRecord is null)
-            {
-                throw new ArgumentNullException(nameof(oldRecord));
-            }
-            else if (this.lastNameDictionary.ContainsKey(oldRecord.LastName))
-            {
-                this.lastNameDictionary[oldRecord.LastName].Remove(oldRecord);
-            }
-        }
-
-        private void RemoveRecordInFirstNameDictionary(FileCabinetRecord oldRecord)
-        {
-            if (oldRecord is null)
-            {
-                throw new ArgumentNullException(nameof(oldRecord));
-            }
-            else if (this.firstNameDictionary.ContainsKey(oldRecord.FirstName))
-            {
-                this.firstNameDictionary[oldRecord.FirstName].Remove(oldRecord);
             }
         }
 
@@ -237,6 +205,42 @@ namespace FileCabinetApp
             else
             {
                 this.dateofbirthDictionary.Add(dateofbirth, new List<FileCabinetRecord> { record });
+            }
+        }
+
+        private void RemoveRecordInDateOfBirthDictionary(FileCabinetRecord oldRecord)
+        {
+            if (oldRecord is null)
+            {
+                throw new ArgumentNullException(nameof(oldRecord));
+            }
+            else if (this.dateofbirthDictionary.ContainsKey(oldRecord.DateOfBirth))
+            {
+                this.dateofbirthDictionary[oldRecord.DateOfBirth].Remove(oldRecord);
+            }
+        }
+
+        private void RemoveRecordInLastNameDictionary(FileCabinetRecord oldRecord)
+        {
+            if (oldRecord is null)
+            {
+                throw new ArgumentNullException(nameof(oldRecord));
+            }
+            else if (this.lastNameDictionary.ContainsKey(oldRecord.LastName))
+            {
+                this.lastNameDictionary[oldRecord.LastName].Remove(oldRecord);
+            }
+        }
+
+        private void RemoveRecordInFirstNameDictionary(FileCabinetRecord oldRecord)
+        {
+            if (oldRecord is null)
+            {
+                throw new ArgumentNullException(nameof(oldRecord));
+            }
+            else if (this.firstNameDictionary.ContainsKey(oldRecord.FirstName))
+            {
+                this.firstNameDictionary[oldRecord.FirstName].Remove(oldRecord);
             }
         }
     }

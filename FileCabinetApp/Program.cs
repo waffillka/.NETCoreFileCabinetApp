@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -20,7 +19,7 @@ namespace FileCabinetApp
         private static FileCabinetServiceContext fileCabinetServiceContext = new FileCabinetServiceContext();
         private static bool isRunning = true;
 
-        private static FileCabinetService fileCabinetService = new(new DataValidator());
+        private static FileCabinetService fileCabinetService = new (new DefaultValidator());
 
         private static readonly Tuple<string, Action<string>>[] Commands = new Tuple<string, Action<string>>[]
         {
@@ -51,6 +50,28 @@ namespace FileCabinetApp
         /// </summary>
         public static void Main(string[] args)
         {
+            Console.Write("Validations rules: ");
+            var validationsRules = Console.ReadLine().Trim(' ').Split(new char[] { ' ', '=' }, StringSplitOptions.RemoveEmptyEntries);
+            var longDescription = "--validation-rules";
+            var shortDescription = "-v";
+            if (validationsRules.Length == 0)
+            {
+                Console.WriteLine("Using default validation rules.");
+            }
+            else if (string.Compare(validationsRules[0], longDescription, StringComparison.OrdinalIgnoreCase) == 0 || string.Compare(validationsRules[0], shortDescription, StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                string parameter = "custom";
+                if (string.Equals(validationsRules[1], parameter, StringComparison.OrdinalIgnoreCase))
+                {
+                    fileCabinetService = new FileCabinetService(new CustomValidator());
+                    Console.WriteLine("Using custom validation rules.");
+                }
+                else
+                {
+                    Console.WriteLine("Using default validation rules.");
+                }
+            }
+
             Console.WriteLine($"File Cabinet Application, developed by {Program.DeveloperName}");
             Console.WriteLine(Program.HintMessage);
             Console.WriteLine();
@@ -236,63 +257,194 @@ namespace FileCabinetApp
 
         private static void UserData()
         {
-            int id;
-            string firstName;
-            string lastName;
-            DateTime dateOfBirth;
-            char gender;
-            short numberOfReviews;
-            decimal salary;
+            Console.Write("First name: ");
+            fileCabinetServiceContext.FirstName = ReadInput(StringConverter, FirstNameValidator);
+            Console.Write("Last Name: ");
+            fileCabinetServiceContext.LastName = ReadInput(StringConverter, LastNameValidator);
+            Console.Write("Date of birth: ");
+            fileCabinetServiceContext.DateOfBirth = ReadInput(DateOfBirthConverter, DateOfBirthValidator);
+            Console.Write("Gender (M/W): ");
+            fileCabinetServiceContext.Gender = ReadInput(GenderConverter, GenderValidator);
+            Console.Write("Number of reviews: ");
+            fileCabinetServiceContext.NumberOfReviews = ReadInput(NumberOfReviewsConverter, NumberOfReviewsValidator);
+            Console.Write("Salary: ");
+            fileCabinetServiceContext.Salary = ReadInput(SalaryConverter, SalaryValidator);
+        }
+
+        private static T ReadInput<T>(Func<string, Tuple<bool, string, T>> converter, Func<T, Tuple<bool, string>> validator)
+        {
             do
             {
-                Console.Write("First name: ");
-                firstName = Console.ReadLine();
-            }
-            while (firstName.Trim().Length < 2 || firstName.Trim().Length > 60);
+                T value;
 
-            do
+                var input = Console.ReadLine();
+                var conversionResult = converter(input);
+
+                if (!conversionResult.Item1)
+                {
+                    Console.WriteLine($"Conversion failed: {conversionResult.Item2}. Please, correct your input.");
+                    continue;
+                }
+
+                value = conversionResult.Item3;
+
+                var validationResult = validator(value);
+                if (!validationResult.Item1)
+                {
+                    Console.WriteLine($"Validation failed: {validationResult.Item2}. Please, correct your input.");
+                    continue;
+                }
+
+                return value;
+            }
+            while (true);
+        }
+
+        private static Tuple<bool, string> FirstNameValidator(string val)
+        {
+            if (string.IsNullOrEmpty(val))
             {
-                Console.Write("Last name: ");
-                lastName = Console.ReadLine();
+                return new Tuple<bool, string>(false, "Empty string");
             }
-            while (lastName.Trim().Length is < 2 or > 60);
-
-            bool w;
-            do
+            else if (!char.IsLetter(val, val.Length - 1))
             {
-                Console.Write("Date of birth: ");
-                w = DateTime.TryParse(Console.ReadLine(), out dateOfBirth);
+                return new Tuple<bool, string>(false, "Check input FirstName");
             }
-            while (!w || (dateOfBirth > DateTime.Now || dateOfBirth < new DateTime(1950, 1, 1)));
-
-            do
+            else
             {
-                Console.Write("Gender (M/W): ");
-                gender = char.ToUpper(Console.ReadKey().KeyChar, new CultureInfo("en-US"));
+                return new Tuple<bool, string>(true, val);
             }
-            while (gender != 'M' && gender != 'W');
+        }
 
-            do
+        private static Tuple<bool, string, string> StringConverter(string val)
+        {
+            return new Tuple<bool, string, string>(true, val, val);
+        }
+
+        private static Tuple<bool, string> LastNameValidator(string val)
+        {
+            if (string.IsNullOrEmpty(val))
             {
-                Console.Write("\nNumber of reviews: ");
-                w = short.TryParse(Console.ReadLine(), out numberOfReviews);
+                return new Tuple<bool, string>(false, "Empty string");
             }
-            while (!w || numberOfReviews < 0);
-
-            do
+            else if (!char.IsLetter(val, val.Length - 1))
             {
-                Console.Write("Salary: ");
-                w = decimal.TryParse(Console.ReadLine(), out salary);
+                return new Tuple<bool, string>(false, "Check input LastName");
             }
-            while (!w || salary < 0);
+            else
+            {
+                return new Tuple<bool, string>(true, val);
+            }
+        }
 
-            fileCabinetServiceContext.FirstName = firstName;
-            fileCabinetServiceContext.LastName = lastName;
-            fileCabinetServiceContext.DateOfBirth = dateOfBirth;
-            fileCabinetServiceContext.NumberOfReviews = numberOfReviews;
-            fileCabinetServiceContext.Gender = gender;
-            fileCabinetServiceContext.Salary = salary;
+        private static Tuple<bool, string> DateOfBirthValidator(DateTime val)
+        {
+            if (val == DateTime.MinValue)
+            {
+                return new Tuple<bool, string>(false, "Сheck input DateOfBirth");
+            }
+            else
+            {
+                return new Tuple<bool, string>(true, string.Empty);
+            }
+        }
 
+        private static Tuple<bool, string, DateTime> DateOfBirthConverter(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+            {
+                return new Tuple<bool, string, DateTime>(false, "Empty field", DateTime.MinValue);
+            }
+
+            if (DateTime.TryParse(val, out DateTime result))
+            {
+                return new Tuple<bool, string, DateTime>(true, val, result);
+            }
+            else
+            {
+                return new Tuple<bool, string, DateTime>(false, val, result);
+            }
+        }
+
+        private static Tuple<bool, string> GenderValidator(char val)
+        {
+            if (val == char.MaxValue)
+            {
+                return new Tuple<bool, string>(false, "Empty string");
+            }
+            else
+            {
+                return new Tuple<bool, string>(true, string.Empty);
+            }
+        }
+
+        private static Tuple<bool, string, char> GenderConverter(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+            {
+                return new Tuple<bool, string, char>(false, "Empty field", char.MinValue);
+            }
+
+            if (char.TryParse(val, out char result))
+            {
+                return new Tuple<bool, string, char>(true, val, result);
+            }
+            else
+            {
+                return new Tuple<bool, string, char>(false, "The symbol is not of the char type", char.MinValue);
+            }
+        }
+
+        private static Tuple<bool, string> NumberOfReviewsValidator(short val)
+        {
+            if (val <= 0)
+            {
+                return new Tuple<bool, string>(false, "Number Of Reviews can't be negative");
+            }
+            else
+            {
+                return new Tuple<bool, string>(true, string.Empty);
+            }
+        }
+
+        private static Tuple<bool, string, short> NumberOfReviewsConverter(string val)
+        {
+            if (short.TryParse(val, out short result))
+            {
+                return new Tuple<bool, string, short>(true, val, result);
+            }
+            else
+            {
+                return new Tuple<bool, string, short>(false, val, 0);
+            }
+        }
+
+        private static Tuple<bool, string, decimal> SalaryConverter(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+            {
+                return new Tuple<bool, string, decimal>(false, "Empty string", 0);
+            }
+            else if (decimal.TryParse(val, out decimal result))
+            {
+                return new Tuple<bool, string, decimal>(true, val, result);
+            }
+            else
+            {
+                return new Tuple<bool, string, decimal>(false, val, 0);
+            }
+        }
+
+        private static Tuple<bool, string> SalaryValidator(decimal val)
+        {
+            if (val <= 0)
+            {
+                return new Tuple<bool, string>(false, "Salary can't be negative");
+            }
+            else
+            {
+                return new Tuple<bool, string>(true, string.Empty);
+            }
         }
     }
 }
