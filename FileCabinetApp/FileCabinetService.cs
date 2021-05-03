@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace FileCabinetApp
@@ -7,7 +8,7 @@ namespace FileCabinetApp
     /// <summary>
     /// contains services for adding, editing, and modifying records.
     /// </summary>
-    public class FileCabinetService
+    public class FileCabinetService : IRecordValidator, IFileCabinetService
     {
         private readonly List<FileCabinetRecord> list = new ();
         private readonly Dictionary<string, List<FileCabinetRecord>> firstNameDictionary = new (StringComparer.InvariantCultureIgnoreCase);
@@ -32,6 +33,7 @@ namespace FileCabinetApp
         public int CreateRecord(FileCabinetServiceContext fileCabinetServiceContext)
         {
             this.contextStrategy.CheckUsersDataEntry(fileCabinetServiceContext);
+            this.CheckUsersDataEntry(fileCabinetServiceContext);
 
             var record = new FileCabinetRecord
             {
@@ -56,9 +58,10 @@ namespace FileCabinetApp
         /// Gets records.
         /// </summary>
         /// <returns>ReadOnlyCollection of records.</returns>
-        public FileCabinetRecord[] GetRecords()
+        public ReadOnlyCollection<FileCabinetRecord> GetRecords()
         {
-            return this.list.ToArray();
+            var readOnlyList = new ReadOnlyCollection<FileCabinetRecord>(this.list);
+            return readOnlyList;
         }
 
         /// <summary>
@@ -103,16 +106,16 @@ namespace FileCabinetApp
         /// </summary>
         /// <param name="firstName">variable by which they are looking.</param>
         /// <returns>ReadOnlyCollection of records.</returns>
-        public FileCabinetRecord[] FindByFirstName(string firstName)
+        public ReadOnlyCollection<FileCabinetRecord> FindByFirstName(string firstName)
         {
             if (this.firstNameDictionary.ContainsKey(firstName))
             {
-                return this.firstNameDictionary[firstName].ToArray();
+                List<FileCabinetRecord> listOfRecords = this.firstNameDictionary[firstName];
+                var readOnlyCollection = new ReadOnlyCollection<FileCabinetRecord>(listOfRecords);
+                return readOnlyCollection;
             }
-            else
-            {
-                return Array.Empty<FileCabinetRecord>();
-            }
+
+            return new ReadOnlyCollection<FileCabinetRecord>(new List<FileCabinetRecord>());
         }
 
         /// <summary>
@@ -120,19 +123,16 @@ namespace FileCabinetApp
         /// </summary>
         /// <param name="lastName">variable by which they are looking.</param>
         /// <returns>ReadOnlyCollection of records.</returns>
-        public FileCabinetRecord[] FindByLastName(string lastName)
+        public ReadOnlyCollection<FileCabinetRecord> FindByLastName(string lastName)
         {
-            var listFileCabinetRecord = new List<FileCabinetRecord>();
-
-            foreach (var temp in this.list)
+            if (this.lastNameDictionary.ContainsKey(lastName))
             {
-                if (temp.LastName == lastName)
-                {
-                    listFileCabinetRecord.Add(temp);
-                }
+                List<FileCabinetRecord> listOfRecords = this.lastNameDictionary[lastName];
+                var readOnlyCollection = new ReadOnlyCollection<FileCabinetRecord>(listOfRecords);
+                return readOnlyCollection;
             }
 
-            return listFileCabinetRecord.ToArray();
+            return new ReadOnlyCollection<FileCabinetRecord>(new List<FileCabinetRecord>());
         }
 
         /// <summary>
@@ -140,21 +140,22 @@ namespace FileCabinetApp
         /// </summary>
         /// <param name="dateofbirth">variable by which they are looking.</param>
         /// <returns>ReadOnlyCollection of records.</returns>
-        public FileCabinetRecord[] FindByDateOfBirth(string dateofbirth)
+        public ReadOnlyCollection<FileCabinetRecord> FindByDateOfBirth(string dateofbirth)
         {
-            if (!DateTime.TryParse(dateofbirth, out DateTime date))
+            DateTime dateTime;
+            if (!DateTime.TryParse(dateofbirth, out dateTime))
             {
-                throw new ArgumentException("Invalid string with date");
+                throw new ArgumentException("Invalid Date", $"{nameof(dateofbirth)}");
             }
 
-            if (this.dateofbirthDictionary.ContainsKey(date))
+            if (this.dateofbirthDictionary.ContainsKey(dateTime))
             {
-                return this.dateofbirthDictionary[date].ToArray();
+                List<FileCabinetRecord> listOfRecords = this.dateofbirthDictionary[dateTime];
+                var readOnlyCollection = new ReadOnlyCollection<FileCabinetRecord>(listOfRecords);
+                return readOnlyCollection;
             }
-            else
-            {
-                return Array.Empty<FileCabinetRecord>();
-            }
+
+            return new ReadOnlyCollection<FileCabinetRecord>(new List<FileCabinetRecord>());
         }
 
         /// <summary>
@@ -242,6 +243,14 @@ namespace FileCabinetApp
             {
                 this.firstNameDictionary[oldRecord.FirstName].Remove(oldRecord);
             }
+        }
+
+        /// <summary>
+        /// changes data an existing record.
+        /// </summary>
+        /// <param name="objectParameter">Input new FirstName, LastName, DateOfBirth, Gender, Salary, NumberOfReviews.</param>
+        public void CheckUsersDataEntry(FileCabinetServiceContext objectParameter)
+        {
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -19,7 +20,7 @@ namespace FileCabinetApp
         private static FileCabinetServiceContext fileCabinetServiceContext = new FileCabinetServiceContext();
         private static bool isRunning = true;
 
-        private static FileCabinetService fileCabinetService = new (new DefaultValidator());
+        private static IFileCabinetService fileCabinetService = new FileCabinetService(new DefaultValidator());
 
         private static readonly Tuple<string, Action<string>>[] Commands = new Tuple<string, Action<string>>[]
         {
@@ -32,7 +33,7 @@ namespace FileCabinetApp
             new Tuple<string, Action<string>>("find", Find),
         };
 
-        private static string[][] helpMessages = new string[][]
+        private static readonly string[][] helpMessages = new string[][]
         {
             new string[] { "help", "prints the help screen", "The 'help' command prints the help screen." },
             new string[] { "exit", "exits the application", "The 'exit' command exits the application." },
@@ -154,9 +155,9 @@ namespace FileCabinetApp
             string repeatIfDataIsNotCorrect = parameters;
             try
             {
-                UserData();
-                int id = Program.fileCabinetService.CreateRecord(fileCabinetServiceContext);
-                Console.WriteLine($"Record #{id} is created.");
+                Program.UserData();
+                Program.fileCabinetService.CreateRecord(fileCabinetServiceContext);
+                Console.WriteLine($"Record # {Program.fileCabinetService.GetStat()} is created.");
             }
             catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException || ex is ArgumentNullException)
             {
@@ -176,7 +177,7 @@ namespace FileCabinetApp
 
         private static void List(string parameters)
         {
-            FileCabinetRecord[] listRecords = Program.fileCabinetService.GetRecords();
+            var listRecords = Program.fileCabinetService.GetRecords();
 
             foreach (FileCabinetRecord record in listRecords)
             {
@@ -215,9 +216,9 @@ namespace FileCabinetApp
             }
         }
 
-        private static void ListRecord(FileCabinetRecord[] listRecordsInService)
+        private static void ListRecord(ReadOnlyCollection<FileCabinetRecord> listRecordsInService)
         {
-            for (int i = 0; i < listRecordsInService.Length; i++)
+            for (int i = 0; i < listRecordsInService.Count; i++)
             {
                 var builder = new StringBuilder();
                 builder.Append($"{listRecordsInService[i].Id}, ");
@@ -282,7 +283,7 @@ namespace FileCabinetApp
 
                 if (!conversionResult.Item1)
                 {
-                    Console.WriteLine($"Conversion failed: {conversionResult.Item2}. Please, correct your input.");
+                    Console.WriteLine($"Conversion failed: {nameof(conversionResult.Item2)}. Please, correct your input.");
                     continue;
                 }
 
