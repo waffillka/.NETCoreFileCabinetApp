@@ -3,14 +3,10 @@
 namespace FileCabinetApp
 {
     /// <summary>
-    /// Properties that describe the model.
+    /// this class is intended to be passed as an object.
     /// </summary>
-    public class FileCabinetRecord
+    public class FileCabinetServiceContext
     {
-        /// <summary>Gets or sets the identifier.</summary>
-        /// <value>Identifier of record.</value>
-        public int Id { get; set; }
-
         /// <summary>Gets or sets the first name.</summary>
         /// <value>First name.</value>
         public string FirstName { get; set; }
