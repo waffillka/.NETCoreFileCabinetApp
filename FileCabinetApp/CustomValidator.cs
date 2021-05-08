@@ -18,12 +18,19 @@ namespace FileCabinetApp
         /// <param name="objectParameter">Input FirstName, LastName, DateOfBirth, Gender, Salary, Age.</param>
         public void CheckUsersDataEntry(FileCabinetServiceContext objectParameter)
         {
-            IsNullOrEmpty(objectParameter.FirstName, nameof(objectParameter.FirstName), objectParameter.LastName, nameof(objectParameter.LastName));
-            CheckLength(objectParameter.FirstName, nameof(objectParameter.FirstName), objectParameter.LastName, nameof(objectParameter.LastName));
-            CheckDateRange(objectParameter.DateOfBirth, nameof(objectParameter.DateOfBirth));
-            CheckGender(objectParameter.Gender, nameof(objectParameter.Gender));
-            CheckSalarySign(objectParameter.Salary, nameof(objectParameter.Salary));
-            CheckNumberOfReviews(objectParameter.NumberOfReviews, nameof(objectParameter.NumberOfReviews));
+            if (objectParameter != null)
+            {
+                IsNullOrEmpty(objectParameter.FirstName, nameof(objectParameter.FirstName), objectParameter.LastName, nameof(objectParameter.LastName));
+                CheckLength(objectParameter.FirstName, nameof(objectParameter.FirstName), objectParameter.LastName, nameof(objectParameter.LastName));
+                CheckDateRange(objectParameter.DateOfBirth, nameof(objectParameter.DateOfBirth));
+                CheckGender(objectParameter.Gender, nameof(objectParameter.Gender));
+                CheckSalarySign(objectParameter.Salary, nameof(objectParameter.Salary));
+                CheckNumberOfReviews(objectParameter.NumberOfReviews, nameof(objectParameter.NumberOfReviews));
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(objectParameter));
+            }
         }
 
         /// <summary>
@@ -57,13 +64,13 @@ namespace FileCabinetApp
         protected static void CheckLength(string firstNameValue, string firstName, string lastNameValue, string lastName)
         {
 #pragma warning disable CA1062 // Проверить аргументы или открытые методы
-            if (firstNameValue.Length < 2 | firstNameValue.Length > 15)
+            if (firstNameValue.Length < 1 | firstNameValue.Length > 100)
 #pragma warning restore CA1062 // Проверить аргументы или открытые методы
             {
                 throw new ArgumentException("Invalid length.", $"{nameof(firstName)}");
             }
 #pragma warning disable CA1062 // Проверить аргументы или открытые методы
-            else if (lastNameValue.Length < 2 | lastNameValue.Length > 15)
+            else if (lastNameValue.Length < 1 | lastNameValue.Length > 100)
 #pragma warning restore CA1062 // Проверить аргументы или открытые методы
             {
                 throw new ArgumentException("Invalid length.", $"{nameof(lastName)}");
@@ -85,20 +92,6 @@ namespace FileCabinetApp
         }
 
         /// <summary>
-        /// checks age for a negative value.
-        /// </summary>
-        /// <param name="ageValue">variable value age.</param>
-        /// <param name="age">variable name age.</param>
-        /// <exception cref="ArgumentException">thrown when <paramref name="ageValue"/> less than 0. </exception>
-        protected static void CheckNumberOfReviews(short numberOfReviewsValue, string numberOfReviews)
-        {
-            if (numberOfReviewsValue < 0)
-            {
-                throw new ArgumentException("Invalid Age", $"{nameof(numberOfReviews)}");
-            }
-        }
-
-        /// <summary>
         /// checks gender.
         /// </summary>
         /// <param name="genderValue">variable value gender.</param>
@@ -110,6 +103,20 @@ namespace FileCabinetApp
             if (!(stringGender.Equals(CheckMenGender, StringComparison.InvariantCultureIgnoreCase) || stringGender.Equals(CheckWomenGender, StringComparison.InvariantCultureIgnoreCase)))
             {
                 throw new ArgumentException("There is no such gender", $"{nameof(gender)}");
+            }
+        }
+
+        /// <summary>
+        /// checks number Of Reviews for a negative value.
+        /// </summary>
+        /// <param name="numberOfReviewsValue">variable value number Of Reviews.</param>
+        /// <param name="numberOfReviews">variable name.</param>
+        /// <exception cref="ArgumentException">thrown, when user entered a negative amount.</exception>
+        protected static void CheckNumberOfReviews(short numberOfReviewsValue, string numberOfReviews)
+        {
+            if (numberOfReviewsValue < 0)
+            {
+                throw new ArgumentException("Invalid Number Of Reviews", $"{nameof(numberOfReviews)}");
             }
         }
 

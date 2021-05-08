@@ -55,6 +55,29 @@ namespace FileCabinetApp
         }
 
         /// <summary>
+        /// makes a snapshot of a list.
+        /// </summary>
+        /// <returns>new cloned object type of <see cref="FileCabinetServiceSnapshot"/> as an array.</returns>
+        public FileCabinetServiceSnapshot MakeSnapshot()
+        {
+            return new FileCabinetServiceSnapshot(this.list.Select(x => DeepCopy(x)).ToArray());
+        }
+
+        private static FileCabinetRecord DeepCopy(FileCabinetRecord record)
+        {
+            return new FileCabinetRecord()
+            {
+                Id = record.Id,
+                FirstName = record.FirstName,
+                LastName = record.LastName,
+                DateOfBirth = record.DateOfBirth,
+                Salary = record.Salary,
+                Gender = record.Gender,
+                NumberOfReviews = record.NumberOfReviews,
+            };
+        }
+
+        /// <summary>
         /// Gets records.
         /// </summary>
         /// <returns>ReadOnlyCollection of records.</returns>

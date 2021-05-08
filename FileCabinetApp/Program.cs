@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -20,7 +21,7 @@ namespace FileCabinetApp
         private static FileCabinetServiceContext fileCabinetServiceContext = new FileCabinetServiceContext();
         private static bool isRunning = true;
 
-        private static IFileCabinetService fileCabinetService = new FileCabinetService(new DefaultValidator());
+        private static FileCabinetService fileCabinetService = new FileCabinetService(new DefaultValidator());
 
         private static readonly Tuple<string, Action<string>>[] Commands = new Tuple<string, Action<string>>[]
         {
@@ -31,6 +32,7 @@ namespace FileCabinetApp
             new Tuple<string, Action<string>>("list", List),
             new Tuple<string, Action<string>>("edit", Edit),
             new Tuple<string, Action<string>>("find", Find),
+            new Tuple<string, Action<string>>("export", Export),
         };
 
         private static readonly string[][] helpMessages = new string[][]
@@ -256,6 +258,55 @@ namespace FileCabinetApp
             }
         }
 
+        private static void Export(string parameters)
+        {
+            bool rewrite = false;
+            const string csv = "csv";
+
+            try
+            {
+                FileCabinetServiceSnapshot snapshot = fileCabinetService.MakeSnapshot();
+                var parametrArray = parameters.Split(' ');
+                var nameFile = parametrArray[^1];
+                var typeFile = parametrArray[^2];
+
+                if (File.Exists(nameFile))
+                {
+                    Console.Write($"File is exist - rewrite {nameFile}? [Y/n]");
+                    var rewriteOrNo = ReadInput(RewriteConverter, RewriteValidator);
+                    char.ToLower(rewriteOrNo, CultureInfo.InvariantCulture);
+                    if (char.Equals('n', rewriteOrNo))
+                    {
+                        rewrite = true;
+                    }
+                }
+
+                try
+                {
+                    if (string.Equals(csv, typeFile))
+                    {
+                        using (var sw = new StreamWriter(nameFile, rewrite))
+                        {
+                            snapshot.SaveToCsv(sw);
+                            Console.WriteLine($"All records are exported to file {nameFile}");
+                        }
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Console.WriteLine($"Export failed: can't open file {nameFile}");
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+            catch (IndexOutOfRangeException)
+            {
+                Console.WriteLine("Enter the file extension and his name or path");
+            }
+        }
+
         private static void UserData()
         {
             Console.Write("First name: ");
@@ -445,6 +496,36 @@ namespace FileCabinetApp
             else
             {
                 return new Tuple<bool, string>(true, string.Empty);
+            }
+        }
+
+        private static Tuple<bool, string> RewriteValidator(char val)
+        {
+            if (val == char.MaxValue)
+            {
+                return new Tuple<bool, string>(false, "Empty string");
+            }
+            else
+            {
+                return new Tuple<bool, string>(true, string.Empty);
+            }
+        }
+
+        private static Tuple<bool, string, char> RewriteConverter(string val)
+        {
+            val = val.Trim();
+            if (string.IsNullOrEmpty(val))
+            {
+                return new Tuple<bool, string, char>(false, "Empty field", char.MinValue);
+            }
+
+            if (char.TryParse(val, out char result))
+            {
+                return new Tuple<bool, string, char>(true, val, result);
+            }
+            else
+            {
+                return new Tuple<bool, string, char>(false, "The symbol is not of the char type", char.MinValue);
             }
         }
     }
