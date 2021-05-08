@@ -8,15 +8,26 @@ using System.Threading.Tasks;
 
 namespace FileCabinetApp
 {
+    /// <summary>
+    /// Class contains methods for writing records to a file.
+    /// </summary>
     public class FileCabinetRecordCsvWriter
     {
         private TextWriter tw;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileCabinetRecordCsvWriter"/> class.
+        /// </summary>
+        /// <param name="tw">Thread.</param>
         public FileCabinetRecordCsvWriter(TextWriter tw)
         {
             this.tw = tw;
         }
 
+        /// <summary>
+        /// Method for writes to a record file.
+        /// </summary>
+        /// <param name="fileCabinetRecord">the record of a <see cref="FileCabinetRecord"/> type.</param>
         public void Write(FileCabinetRecord fileCabinetRecord)
         {
             StringBuilder builder = new StringBuilder();
