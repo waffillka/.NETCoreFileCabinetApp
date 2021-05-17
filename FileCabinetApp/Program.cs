@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -20,7 +21,7 @@ namespace FileCabinetApp
         private static FileCabinetServiceContext fileCabinetServiceContext = new FileCabinetServiceContext();
         private static bool isRunning = true;
 
-        private static IFileCabinetService fileCabinetService = new FileCabinetService(new DefaultValidator());
+        private static FileCabinetService fileCabinetService = new FileCabinetService(new DefaultValidator());
 
         private static readonly Tuple<string, Action<string>>[] Commands = new Tuple<string, Action<string>>[]
         {
@@ -31,9 +32,10 @@ namespace FileCabinetApp
             new Tuple<string, Action<string>>("list", List),
             new Tuple<string, Action<string>>("edit", Edit),
             new Tuple<string, Action<string>>("find", Find),
+            new Tuple<string, Action<string>>("export", Export),
         };
 
-        private static readonly string[][] helpMessages = new string[][]
+        private static readonly string[][] HelpMessages = new string[][]
         {
             new string[] { "help", "prints the help screen", "The 'help' command prints the help screen." },
             new string[] { "exit", "exits the application", "The 'exit' command exits the application." },
@@ -43,8 +45,6 @@ namespace FileCabinetApp
             new string[] { "edit", "edits a record", "The 'edit' command edits a record." },
             new string[] { "find", "find record by a known value", "The 'find' command find record by a known value" },
         };
-
-        private static bool isCorrect;
 
         /// <summary>
         /// Point of entry.
@@ -115,10 +115,10 @@ namespace FileCabinetApp
         {
             if (!string.IsNullOrEmpty(parameters))
             {
-                var index = Array.FindIndex(helpMessages, 0, helpMessages.Length, i => string.Equals(i[Program.CommandHelpIndex], parameters, StringComparison.InvariantCultureIgnoreCase));
+                var index = Array.FindIndex(HelpMessages, 0, HelpMessages.Length, i => string.Equals(i[Program.CommandHelpIndex], parameters, StringComparison.InvariantCultureIgnoreCase));
                 if (index >= 0)
                 {
-                    Console.WriteLine(helpMessages[index][Program.ExplanationHelpIndex]);
+                    Console.WriteLine(HelpMessages[index][Program.ExplanationHelpIndex]);
                 }
                 else
                 {
@@ -129,7 +129,7 @@ namespace FileCabinetApp
             {
                 Console.WriteLine("Available commands:");
 
-                foreach (var helpMessage in helpMessages)
+                foreach (var helpMessage in HelpMessages)
                 {
                     Console.WriteLine("\t{0}\t- {1}", helpMessage[Program.CommandHelpIndex], helpMessage[Program.DescriptionHelpIndex]);
                 }
@@ -152,6 +152,7 @@ namespace FileCabinetApp
 
         private static void Create(string parameters)
         {
+            bool isCorrect = true;
             string repeatIfDataIsNotCorrect = parameters;
             try
             {
@@ -253,6 +254,73 @@ namespace FileCabinetApp
             catch (FormatException ex)
             {
                 Console.WriteLine(ex.Message);
+            }
+        }
+
+        private static void Export(string parameters)
+        {
+            bool rewrite = false;
+            const string csv = "csv";
+            const string xml = "xml";
+
+            try
+            {
+                FileCabinetServiceSnapshot snapshot = fileCabinetService.MakeSnapshot();
+                var parametrArray = parameters.Split(' ');
+                var nameFile = parametrArray[^1];
+                var typeFile = parametrArray[^2];
+
+                if (File.Exists(nameFile))
+                {
+                    Console.Write($"File is exist - rewrite {nameFile}? [Y/n]");
+                    var rewriteOrNo = ReadInput(RewriteConverter, RewriteValidator);
+                    char.ToLower(rewriteOrNo, CultureInfo.InvariantCulture);
+                    if (char.Equals('n', rewriteOrNo))
+                    {
+                        rewrite = true;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Export failed: can't open file {nameFile}");
+                    return;
+                }
+
+                try
+                {
+                    if (string.Equals(csv, typeFile))
+                    {
+                        using (var sw = new StreamWriter(nameFile, rewrite))
+                        {
+                            snapshot.SaveToCsv(sw);
+                            Console.WriteLine($"All records are exported to file {nameFile}");
+                        }
+                    }
+                    else if (string.Equals(xml, typeFile, StringComparison.OrdinalIgnoreCase))
+                    {
+                        using (var sw = new StreamWriter(nameFile, rewrite))
+                        {
+                            snapshot.SaveToXml(sw);
+                            Console.WriteLine($"All records are exported to file {nameFile}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("File type does not exist.");
+                    }
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    Console.WriteLine($"Export failed: can't open file {nameFile}");
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+            catch (IndexOutOfRangeException)
+            {
+                Console.WriteLine("Enter the file extension and his name or path");
             }
         }
 
@@ -445,6 +513,36 @@ namespace FileCabinetApp
             else
             {
                 return new Tuple<bool, string>(true, string.Empty);
+            }
+        }
+
+        private static Tuple<bool, string> RewriteValidator(char val)
+        {
+            if (val == char.MaxValue)
+            {
+                return new Tuple<bool, string>(false, "Empty string");
+            }
+            else
+            {
+                return new Tuple<bool, string>(true, string.Empty);
+            }
+        }
+
+        private static Tuple<bool, string, char> RewriteConverter(string val)
+        {
+            val = val.Trim();
+            if (string.IsNullOrEmpty(val))
+            {
+                return new Tuple<bool, string, char>(false, "Empty field", char.MinValue);
+            }
+
+            if (char.TryParse(val, out char result))
+            {
+                return new Tuple<bool, string, char>(true, val, result);
+            }
+            else
+            {
+                return new Tuple<bool, string, char>(false, "The symbol is not of the char type", char.MinValue);
             }
         }
     }
