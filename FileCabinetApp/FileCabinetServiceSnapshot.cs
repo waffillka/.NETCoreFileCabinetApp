@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace FileCabinetApp
 {
@@ -14,6 +15,7 @@ namespace FileCabinetApp
     {
         private FileCabinetRecord[] records;
         private FileCabinetRecordCsvWriter writerCsv;
+        private FileCabinetRecordXmlWriter writerXml;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileCabinetServiceSnapshot"/> class.
@@ -36,6 +38,22 @@ namespace FileCabinetApp
             {
                 this.writerCsv.Write(record);
             }
+        }
+
+        /// <summary>
+        /// passing a stream to a class <see cref="FileCabinetRecordXmlWriter"/> and list of record.
+        /// </summary>
+        /// <param name="sw">stream.</param>
+        public void SaveToXml(StreamWriter sw)
+        {
+            List<FileCabinetRecord> list = new List<FileCabinetRecord>();
+            this.writerXml = new FileCabinetRecordXmlWriter(XmlWriter.Create(sw));
+            foreach (var record in this.records)
+            {
+                list.Add(record);
+            }
+
+            this.writerXml.Write(list);
         }
     }
 }

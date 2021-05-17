@@ -35,7 +35,7 @@ namespace FileCabinetApp
             new Tuple<string, Action<string>>("export", Export),
         };
 
-        private static readonly string[][] helpMessages = new string[][]
+        private static readonly string[][] HelpMessages = new string[][]
         {
             new string[] { "help", "prints the help screen", "The 'help' command prints the help screen." },
             new string[] { "exit", "exits the application", "The 'exit' command exits the application." },
@@ -45,8 +45,6 @@ namespace FileCabinetApp
             new string[] { "edit", "edits a record", "The 'edit' command edits a record." },
             new string[] { "find", "find record by a known value", "The 'find' command find record by a known value" },
         };
-
-        private static bool isCorrect;
 
         /// <summary>
         /// Point of entry.
@@ -117,10 +115,10 @@ namespace FileCabinetApp
         {
             if (!string.IsNullOrEmpty(parameters))
             {
-                var index = Array.FindIndex(helpMessages, 0, helpMessages.Length, i => string.Equals(i[Program.CommandHelpIndex], parameters, StringComparison.InvariantCultureIgnoreCase));
+                var index = Array.FindIndex(HelpMessages, 0, HelpMessages.Length, i => string.Equals(i[Program.CommandHelpIndex], parameters, StringComparison.InvariantCultureIgnoreCase));
                 if (index >= 0)
                 {
-                    Console.WriteLine(helpMessages[index][Program.ExplanationHelpIndex]);
+                    Console.WriteLine(HelpMessages[index][Program.ExplanationHelpIndex]);
                 }
                 else
                 {
@@ -131,7 +129,7 @@ namespace FileCabinetApp
             {
                 Console.WriteLine("Available commands:");
 
-                foreach (var helpMessage in helpMessages)
+                foreach (var helpMessage in HelpMessages)
                 {
                     Console.WriteLine("\t{0}\t- {1}", helpMessage[Program.CommandHelpIndex], helpMessage[Program.DescriptionHelpIndex]);
                 }
@@ -154,6 +152,7 @@ namespace FileCabinetApp
 
         private static void Create(string parameters)
         {
+            bool isCorrect = true;
             string repeatIfDataIsNotCorrect = parameters;
             try
             {
@@ -262,6 +261,7 @@ namespace FileCabinetApp
         {
             bool rewrite = false;
             const string csv = "csv";
+            const string xml = "xml";
 
             try
             {
@@ -280,6 +280,11 @@ namespace FileCabinetApp
                         rewrite = true;
                     }
                 }
+                else
+                {
+                    Console.WriteLine($"Export failed: can't open file {nameFile}");
+                    return;
+                }
 
                 try
                 {
@@ -290,6 +295,18 @@ namespace FileCabinetApp
                             snapshot.SaveToCsv(sw);
                             Console.WriteLine($"All records are exported to file {nameFile}");
                         }
+                    }
+                    else if (string.Equals(xml, typeFile, StringComparison.OrdinalIgnoreCase))
+                    {
+                        using (var sw = new StreamWriter(nameFile, rewrite))
+                        {
+                            snapshot.SaveToXml(sw);
+                            Console.WriteLine($"All records are exported to file {nameFile}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("File type does not exist.");
                     }
                 }
                 catch (DirectoryNotFoundException)
